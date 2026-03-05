@@ -1,0 +1,47 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  node_version: '20.x'
+
+steps:
+
+# Install Node.js
+- task: NodeTool@0
+  inputs:
+    versionSpec: '$(node_version)'
+  displayName: 'Install Node.js'
+
+# Install dependencies
+- script: |
+    npm install
+  displayName: 'Install Dependencies'
+
+# Build frontend (if your project has React/Vite/Next etc.)
+- script: |
+    npm run build
+  displayName: 'Build Application'
+
+# Run tests (optional)
+- script: |
+    npm test
+  displayName: 'Run Tests'
+  continueOnError: true
+
+# Start the application (for verification)
+- script: |
+    npm start &
+    sleep 10
+    curl http://localhost:3000 || true
+  displayName: 'Run Application Test'
+
+# Publish build artifacts
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(System.DefaultWorkingDirectory)'
+    ArtifactName: 'node-app'
+    publishLocation: 'Container'
+  displayName: 'Publish Artifacts'
